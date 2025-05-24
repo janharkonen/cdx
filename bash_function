@@ -1,0 +1,51 @@
+function cdx(){
+    if [ -z "$1" ]; then
+        echo "Usage: cdx <partial_directory_name>"
+        return 1
+    fi
+
+    local search_term="$1"
+    local search_paths=("$HOME" "/")  # Add more base paths as needed
+    
+    # Find directories matching the search term
+    local matches=()
+    for base_path in "${search_paths[@]}"; do
+        if [ -d "$base_path" ]; then
+            echo "here $base_path"
+            while IFS= read -r -d '' dir; do
+                matches+=("$dir")
+            done < <(find "$base_path" -type d -name "*$search_term*" -print0 2>/dev/null | head -20)
+        fi
+    done
+    
+    # Remove duplicates and sort
+    local unique_matches=($(printf '%s\n' "${matches[@]}" | sort -u))
+    
+    case ${#unique_matches[@]} in
+        0)
+            echo "No directories found matching '$search_term'"
+            return 1
+            ;;
+        1)
+            echo "Changing to: ${unique_matches[0]}"
+            cd "${unique_matches[0]}"
+            ;;
+        *)
+            echo "Multiple matches found:"
+            for i in "${!unique_matches[@]}"; do
+                echo "$((i+1)): ${unique_matches[i]}"
+            done
+            echo -n "Select directory (1-${#unique_matches[@]}): "
+            read -r choice
+            if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le ${#unique_matches[@]} ]; then
+                selected_dir="${unique_matches[$((choice-1))]}"
+                echo "Changing to: $selected_dir"
+                cd "$selected_dir"
+            else
+                echo "Invalid selection"
+                return 1
+            fi
+            ;;
+    esac
+}
+
