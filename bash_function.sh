@@ -45,13 +45,11 @@ cdx() {
         cdx_update_cache
     fi
     
-    local initial_query="$1"
-    
     local selected_dir
-    if [ -n "$initial_query" ]; then
-        selected_dir=$(cat "$CDX_CACHE_FILE" | fzf --query="$initial_query" --select-1 --exit-0 --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
+    if [ -n "$1" ]; then
+        selected_dir=$(cat "$CDX_CACHE_FILE" | grep -v "/Trash/" | fzf --query="$1" --select-1 --exit-0 --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
     else
-        selected_dir=$(cat "$CDX_CACHE_FILE" | fzf --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
+        selected_dir=$(cat "$CDX_CACHE_FILE" | grep -v "/Trash/" | fzf --height=40% --border --preview='ls -a {}' --preview-window=right:50%)
     fi
     
     if [ -n "$selected_dir" ] && [ -d "$selected_dir" ]; then
