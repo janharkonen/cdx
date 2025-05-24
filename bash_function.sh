@@ -2,15 +2,15 @@
 
 CDX_CACHE_FILE="$HOME/.cdx_cache"
 CDX_MAX_DEPTH=6
+SEARCH_PATHS=("/")
 
 cdx_update_cache() {
     echo "Updating directory cache..."
-    local search_paths=("$HOME" "/usr" "/opt" "/var")
     
     # Clear existing cache
     > "$CDX_CACHE_FILE"
     
-    for base_path in "${search_paths[@]}"; do
+    for base_path in "${SEARCH_PATHS[@]}"; do
         if [ -d "$base_path" ]; then
             find "$base_path" -maxdepth "$CDX_MAX_DEPTH" -type d 2>/dev/null >> "$CDX_CACHE_FILE"
         fi
@@ -36,7 +36,6 @@ cdx() {
     
     local initial_query="$1"
     
-    # Use fzf to select directory with initial query
     local selected_dir
     if [ -n "$initial_query" ]; then
         selected_dir=$(cat "$CDX_CACHE_FILE" | fzf --query="$initial_query" --select-1 --exit-0 --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
@@ -60,13 +59,10 @@ cdx_live() {
         return 1
     fi
     
-    local search_paths=("$HOME" "/usr" "/opt" "/var")
     local initial_query="$1"
     
-    # Real-time directory search
     local selected_dir
-    selected_dir=$(find "${search_paths[@]}" -maxdepth "$CDX_MAX_DEPTH" -type d 2>/dev/null | \
-        fzf --query="$initial_query" --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
+    selected_dir=$(find "${SEARCH_PATHS[@]}" -maxdepth "$CDX_MAX_DEPTH" -type d 2>/dev/null | fzf --query="$initial_query" --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
     
     if [ -n "$selected_dir" ] && [ -d "$selected_dir" ]; then
         echo "→ $selected_dir"
