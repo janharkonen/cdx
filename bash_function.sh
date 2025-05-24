@@ -1,8 +1,10 @@
 #!/bin/bash
 
 CDX_CACHE_FILE="$HOME/.cdx_cache"
-CDX_MAX_DEPTH=6
+CDX_MAX_DEPTH=10
 SEARCH_PATHS=("/")
+
+
 
 cdx_update_cache() {
     echo "Updating directory cache..."
@@ -28,7 +30,16 @@ cdx() {
         echo "macOS: brew install fzf"
         return 1
     fi
-    
+    if [ $1 == "--help" ]; then
+        echo "Usage: cdx jotain"
+        echo "  --help: Show this help message"
+        echo "  --update: Update the cache"
+        return 0
+    fi
+    if [ $1 == "--update" ]; then
+        cdx_update_cache
+        return 0
+    fi
     # Update cache if it doesn't exist or is older than 24 hours
     if [ ! -f "$CDX_CACHE_FILE" ] || [ $(find "$CDX_CACHE_FILE" -mtime +1 2>/dev/null | wc -l) -gt 0 ]; then
         cdx_update_cache
@@ -53,7 +64,7 @@ cdx() {
 }
 
 # Alternative: cdx with real-time directory search (no cache)
-cdx_live() {
+cdl() {
     if ! command -v fzf >/dev/null 2>&1; then
         echo "Error: fzf is not installed."
         return 1
