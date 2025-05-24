@@ -2,7 +2,7 @@
 
 CDX_CACHE_FILE="$HOME/.cdx_cache"
 CDX_MAX_DEPTH=10
-SEARCH_PATHS=("/")
+SEARCH_PATHS=("$HOME")
 
 
 
@@ -30,13 +30,13 @@ cdx() {
         echo "macOS: brew install fzf"
         return 1
     fi
-    if [ $1 == "--help" ]; then
+    if [ -n "$1" ] && [ $1 == "--help" ]; then
         echo "Usage: cdx jotain"
         echo "  --help: Show this help message"
         echo "  --update: Update the cache"
         return 0
     fi
-    if [ $1 == "--update" ]; then
+    if [ -n "$1" ] && [ $1 == "--update" ]; then
         cdx_update_cache
         return 0
     fi
@@ -44,7 +44,6 @@ cdx() {
     if [ ! -f "$CDX_CACHE_FILE" ] || [ $(find "$CDX_CACHE_FILE" -mtime +1 2>/dev/null | wc -l) -gt 0 ]; then
         cdx_update_cache
     fi
-    
     local selected_dir
     if [ -n "$1" ]; then
         selected_dir=$(cat "$CDX_CACHE_FILE" | grep -v "/Trash/" | fzf --query="$1" --select-1 --exit-0 --height=40% --border --preview='ls -la {}' --preview-window=right:50%)
